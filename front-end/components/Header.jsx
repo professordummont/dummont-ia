@@ -3,6 +3,25 @@
 import { useState } from 'react';
 import Link from 'next/link';
 
+// Exemplo: usando ícones SVG inline (sem necessidade de libs externas para este exemplo)
+const ProfileIcon = () => (
+  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="black" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <circle cx="12" cy="8" r="4"></circle>
+    <path d="M16 16c-1.333-2-6.667-2-8 0"></path>
+    <path d="M4 20h16"></path>
+  </svg>
+);
+
+const RobotIcon = () => (
+  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="black" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <rect x="3" y="8" width="18" height="12" rx="2"></rect>
+    <circle cx="7" cy="12" r="1"></circle>
+    <circle cx="17" cy="12" r="1"></circle>
+    <path d="M12 8v-5"></path>
+    <path d="M8 3h8"></path>
+  </svg>
+);
+
 export default function Header() {
   const [showMenu, setShowMenu] = useState(false);
 
@@ -18,10 +37,18 @@ export default function Header() {
       top: 0,
       zIndex: 100,
     }}>
-      <h1 style={{ marginRight: 'auto', fontSize: '1.5rem', fontWeight: 'bold' }}>
-        Minha Plataforma
-      </h1>
-      
+      <div style={{ display: 'flex', alignItems: 'center', marginRight: 'auto' }}>
+        <RobotIcon />
+        <h1 style={{
+          marginLeft: '0.5rem',
+          fontSize: '1.5rem',
+          fontWeight: 'bold',
+          fontFamily: "'Stunning', sans-serif", // precisa garantir que a fonte "Stunning" foi carregada
+        }}>
+          Minha Plataforma
+        </h1>
+      </div>
+
       <div style={{ position: 'relative' }}>
         <button
           onClick={() => setShowMenu(!showMenu)}
@@ -29,10 +56,10 @@ export default function Header() {
             background: 'transparent',
             border: 'none',
             cursor: 'pointer',
-            fontSize: '1.5rem',
+            padding: 0,
           }}
         >
-          👤
+          <ProfileIcon />
         </button>
 
         {showMenu && (

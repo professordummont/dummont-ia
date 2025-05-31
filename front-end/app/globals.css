@@ -1,0 +1,16 @@
+@font-face {
+  font-family: 'Stunning';
+  src: url('/fonts/Stunning.woff2') format('woff2'),
+       url('/fonts/Stunning.woff') format('woff');
+  font-weight: normal;
+  font-style: normal;
+}
+
+/* Exemplo opcional: definir a fonte como padrão no body */
+body {
+  font-family: 'Stunning', sans-serif;
+  margin: 0;
+  padding: 0;
+  background-color: #fff;
+  color: #000;
+}
