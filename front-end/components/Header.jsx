@@ -34,21 +34,24 @@ export default function Header() {
           src="/logo.png"
           alt="Logo"
           style={{
-            width: '32px',
-            height: '32px',
+            width: '40px',
+            height: '40px',
             borderRadius: '50%', // se quiser deixar ela redonda
             objectFit: 'cover',
           }}
         />
-        {/* Título */}
-        <h1 style={{
+        {/* Título com link para a home */}
+        <Link href="/" style={{
           marginLeft: '0.5rem',
           fontSize: '1.5rem',
           fontWeight: 'bold',
           fontFamily: "'Stunning', sans-serif", // precisa garantir que a fonte "Stunning" foi carregada
+          textDecoration: 'none',
+          color: '#000',
+          cursor: 'pointer',
         }}>
           Dummont IA
-        </h1>
+        </Link>
       </div>
 
       {/* Ícone de Perfil com circunferência */}

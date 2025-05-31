@@ -35,25 +35,29 @@ export default function ChatBox() {
     <div style={{
       display: 'flex',
       flexDirection: 'column',
-      height: '100vh',
+      height: 'calc(100vh - 64px)',
       backgroundColor: '#fff',
       color: '#000',
     }}>
       <div style={{
-        flex: 1,
+        flex: '1 1 auto',
+        maxHeight: 'calc(100vh - 64px - 220px)',
         overflowY: 'auto',
         padding: '2rem',
         display: 'flex',
         flexDirection: 'column',
         justifyContent: 'flex-start',
+        alignItems: 'center', // <- centraliza o conteúdo
         gap: '1rem',
       }}>
         {messages.map((msg, index) => (
           <div
             key={index}
             style={{
-              alignSelf: msg.sender === 'user' ? 'flex-end' : 'flex-start',
-              maxWidth: '70%',
+              alignSelf: 'center', // <- todos ficam no centro, controlamos com margin
+              marginLeft: msg.sender === 'ai' ? '0' : 'auto',
+              marginRight: msg.sender === 'user' ? '0' : 'auto',
+              maxWidth: '60%', // você pode ajustar para mais centralizado
               fontSize: '1rem',
               lineHeight: '1.6',
               backgroundColor: '#fff',
@@ -72,7 +76,7 @@ export default function ChatBox() {
 
       <div style={{
         padding: '1.5rem',
-        borderTop: '1px solid #000',
+        borderTop: 'none',
         backgroundColor: '#fff',
       }}>
         <div style={{
@@ -80,7 +84,7 @@ export default function ChatBox() {
           alignItems: 'center',
           maxWidth: '800px',
           margin: '0 auto',
-          border: '1px solid #000',
+          border: '1px solid #ddd',
           borderRadius: '8px',
           padding: '0.75rem 1rem',
         }}>
