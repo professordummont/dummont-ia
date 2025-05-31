@@ -12,16 +12,6 @@ const ProfileIcon = () => (
   </svg>
 );
 
-const RobotIcon = () => (
-  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="black" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <rect x="3" y="8" width="18" height="12" rx="2"></rect>
-    <circle cx="7" cy="12" r="1"></circle>
-    <circle cx="17" cy="12" r="1"></circle>
-    <path d="M12 8v-5"></path>
-    <path d="M8 3h8"></path>
-  </svg>
-);
-
 export default function Header() {
   const [showMenu, setShowMenu] = useState(false);
 
@@ -37,18 +27,31 @@ export default function Header() {
       top: 0,
       zIndex: 100,
     }}>
+      {/* Logo + Título */}
       <div style={{ display: 'flex', alignItems: 'center', marginRight: 'auto' }}>
-        <RobotIcon />
+        {/* Logo */}
+        <img
+          src="/logo.png"
+          alt="Logo"
+          style={{
+            width: '32px',
+            height: '32px',
+            borderRadius: '50%', // se quiser deixar ela redonda
+            objectFit: 'cover',
+          }}
+        />
+        {/* Título */}
         <h1 style={{
           marginLeft: '0.5rem',
           fontSize: '1.5rem',
           fontWeight: 'bold',
           fontFamily: "'Stunning', sans-serif", // precisa garantir que a fonte "Stunning" foi carregada
         }}>
-          Minha Plataforma
+          Dummont IA
         </h1>
       </div>
 
+      {/* Ícone de Perfil com circunferência */}
       <div style={{ position: 'relative' }}>
         <button
           onClick={() => setShowMenu(!showMenu)}
@@ -59,7 +62,18 @@ export default function Header() {
             padding: 0,
           }}
         >
-          <ProfileIcon />
+          {/* Circunferência */}
+          <div style={{
+            width: '40px',
+            height: '40px',
+            borderRadius: '50%',
+            border: '2px solid #000',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}>
+            <ProfileIcon />
+          </div>
         </button>
 
         {showMenu && (
