@@ -1,11 +1,13 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { FiSend, FiMic, FiPaperclip } from 'react-icons/fi'; // Feather Icons (leve e elegante)
 
 export default function ChatBox() {
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState('');
+  const [isListening, setIsListening] = useState(false); // <- novo estado para controle
+  const recognitionRef = useRef(null);
 
   const handleSend = async () => {
     if (!input.trim()) return;
@@ -31,6 +33,75 @@ export default function ChatBox() {
     setInput('');
   };
 
+  const handleFileChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      console.log('Arquivo selecionado:', file);
+
+      // Exemplo: você poderia enviar esse arquivo para o back via FormData:
+      /*
+      const formData = new FormData();
+      formData.append('file', file);
+
+      fetch('http://localhost:8000/api/upload/', {
+        method: 'POST',
+        body: formData,
+      })
+        .then(response => response.json())
+        .then(data => console.log('Resposta upload:', data))
+        .catch(error => console.error('Erro no upload:', error));
+      */
+    }
+  };
+
+  const startRecognition = () => {
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+
+    if (!SpeechRecognition) {
+      alert('Seu navegador não suporta reconhecimento de fala.');
+      return;
+    }
+
+    if (!recognitionRef.current) {
+      recognitionRef.current = new SpeechRecognition();
+      recognitionRef.current.lang = 'pt-BR';
+      recognitionRef.current.continuous = false;
+      recognitionRef.current.interimResults = false;
+
+      recognitionRef.current.onresult = (event) => {
+        const transcript = event.results[0][0].transcript;
+        console.log('Transcrição:', transcript);
+        setInput(transcript); // coloca no input para você poder enviar
+      };
+
+      recognitionRef.current.onerror = (event) => {
+        console.error('Erro no reconhecimento:', event.error);
+      };
+
+      recognitionRef.current.onstart = () => {
+        console.log('Reconhecimento começou');
+        setIsListening(true);
+      };
+
+      recognitionRef.current.onend = () => {
+        console.log('Reconhecimento terminou');
+        setIsListening(false);
+      };
+    }
+
+    // Protege com try/catch para evitar InvalidStateError
+    try {
+      recognitionRef.current.start();
+      console.log('Reconhecimento iniciado');
+    } catch (error) {
+      if (error.name === 'InvalidStateError') {
+        console.warn('Reconhecimento já em execução');
+      } else {
+        console.error('Erro ao iniciar reconhecimento:', error);
+      }
+    }
+  };
+
   return (
     <div style={{
       display: 'flex',
@@ -47,17 +118,17 @@ export default function ChatBox() {
         display: 'flex',
         flexDirection: 'column',
         justifyContent: 'flex-start',
-        alignItems: 'center', // <- centraliza o conteúdo
+        alignItems: 'center',
         gap: '1rem',
       }}>
         {messages.map((msg, index) => (
           <div
             key={index}
             style={{
-              alignSelf: 'center', // <- todos ficam no centro, controlamos com margin
+              alignSelf: 'center',
               marginLeft: msg.sender === 'ai' ? '0' : 'auto',
               marginRight: msg.sender === 'user' ? '0' : 'auto',
-              maxWidth: '60%', // você pode ajustar para mais centralizado
+              maxWidth: '60%',
               fontSize: '1rem',
               lineHeight: '1.6',
               backgroundColor: '#fff',
@@ -89,7 +160,7 @@ export default function ChatBox() {
           padding: '0.75rem 1rem',
         }}>
           {/* Ícone de anexo */}
-          <button
+          <label
             style={{
               display: 'flex',
               alignItems: 'center',
@@ -105,7 +176,13 @@ export default function ChatBox() {
             title="Anexar arquivo"
           >
             <FiPaperclip size={20} color="#fff" />
-          </button>
+            <input
+              type="file"
+              accept="image/*"
+              style={{ display: 'none' }}
+              onChange={handleFileChange}
+            />
+          </label>
 
           {/* Input de texto */}
           <input
@@ -127,11 +204,12 @@ export default function ChatBox() {
 
           {/* Ícone de microfone */}
           <button
+            onClick={startRecognition}
             style={{
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              backgroundColor: '#000',
+              backgroundColor: isListening ? '#f00' : '#000', // vermelho se escutando
               border: 'none',
               borderRadius: '50%',
               width: '40px',
@@ -140,7 +218,7 @@ export default function ChatBox() {
               marginLeft: '0.5rem',
               marginRight: '0.5rem',
             }}
-            title="Gravar áudio"
+            title={isListening ? 'Escutando...' : 'Gravar áudio'}
           >
             <FiMic size={20} color="#fff" />
           </button>

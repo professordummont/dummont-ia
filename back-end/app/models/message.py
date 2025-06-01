@@ -1,9 +1,11 @@
 from pydantic import BaseModel
+from typing import Optional, Dict
 
-# Schema da requisição (o que o front manda)
 class ChatRequest(BaseModel):
     message: str
+    questionnaire: Optional[Dict] = None  # dict com respostas dos pais/alunos
+    attachment: Optional[str] = None      # URL ou base64 da imagem
+    audio: Optional[str] = None           # URL ou base64 do áudio
 
-# Schema da resposta (o que o back retorna)
 class ChatResponse(BaseModel):
-    response: str
+    response: str  # Aula final (texto)
