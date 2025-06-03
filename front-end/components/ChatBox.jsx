@@ -1,25 +1,101 @@
 'use client';
 
-import { useState, useRef } from 'react';
-import { FiSend, FiMic, FiPaperclip } from 'react-icons/fi'; // Feather Icons (leve e elegante)
+import { useState, useRef, useEffect } from 'react';
+import { FiSend, FiMic, FiPaperclip } from 'react-icons/fi';
 
 export default function ChatBox() {
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState('');
-  const [isListening, setIsListening] = useState(false); // <- novo estado para controle
+  const [isListening, setIsListening] = useState(false);
   const recognitionRef = useRef(null);
+
+  const [conversationContext, setConversationContext] = useState({
+    subject: '',
+    thematic: '',
+    attachment: null
+  });
+
+  const [conversationStep, setConversationStep] = useState(0); // controla a etapa da conversa
+
+  // Ao abrir o chat, envia a primeira pergunta do sistema
+  useEffect(() => {
+    setMessages([
+      { sender: 'system', text: 'Olá! Para começarmos, qual matéria você está estudando?' }
+    ]);
+  }, []);
 
   const handleSend = async () => {
     if (!input.trim()) return;
 
+    // Adiciona a mensagem do usuário
     const userMessage = { sender: 'user', text: input };
-    setMessages([...messages, userMessage]);
+    setMessages(prev => [...prev, userMessage]);
 
+    // Controle de etapa: preenche subject, thematic e libera o chat
+    if (conversationStep === 0) {
+      setConversationContext(prev => ({ ...prev, subject: input }));
+      setConversationStep(1);
+
+      // Próxima pergunta vem como mensagem do sistema
+      setMessages(prev => [
+        ...prev,
+        { sender: 'system', text: 'Qual a temática da aula? (se você souber)' }
+      ]);
+
+      setInput('');
+      return;
+    }
+
+    if (conversationStep === 1) {
+      setConversationContext(prev => ({ ...prev, thematic: input }));
+      setConversationStep(2);
+
+      setMessages(prev => [
+        ...prev,
+        { sender: 'system', text: 'Deseja enviar fotos de livro ou apostila? (clique no clipe 📎). Se não, digite "Não".' }
+      ]);
+
+      setInput('');
+      return;
+    }
+
+    if (conversationStep === 2) {
+      // Se o usuário disser "não", avança para conversa normal
+      if (input.toLowerCase() === 'não' || input.toLowerCase() === 'nao') {
+        setConversationStep(3);
+
+        setMessages(prev => [
+          ...prev,
+          { sender: 'system', text: 'Perfeito! Agora você pode fazer sua pergunta ou enviar o que deseja aprender.' }
+        ]);
+      } else {
+        // Se o usuário digitar algo, ainda pode ser tratado como texto
+        setMessages(prev => [
+          ...prev,
+          { sender: 'system', text: 'Foto anexada ou texto recebido. Agora você pode começar a conversar normalmente!' }
+        ]);
+        setConversationStep(3);
+      }
+
+      setInput('');
+      return;
+    }
+
+    // Conversa normal (enviar para o backend)
     try {
+      const payload = {
+        message: input,
+        subject: conversationContext.subject,
+        thematic: conversationContext.thematic,
+        attachment: conversationContext.attachment
+          ? conversationContext.attachment.name
+          : null
+      };
+
       const response = await fetch('http://localhost:8000/api/chat/', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ message: input }),
+        body: JSON.stringify(payload),
       });
 
       const data = await response.json();
@@ -38,19 +114,20 @@ export default function ChatBox() {
     if (file) {
       console.log('Arquivo selecionado:', file);
 
-      // Exemplo: você poderia enviar esse arquivo para o back via FormData:
-      /*
-      const formData = new FormData();
-      formData.append('file', file);
+      setConversationContext(prev => ({
+        ...prev,
+        attachment: file
+      }));
 
-      fetch('http://localhost:8000/api/upload/', {
-        method: 'POST',
-        body: formData,
-      })
-        .then(response => response.json())
-        .then(data => console.log('Resposta upload:', data))
-        .catch(error => console.error('Erro no upload:', error));
-      */
+      // Se ainda está na etapa 2, avança
+      if (conversationStep === 2) {
+        setConversationStep(3);
+
+        setMessages(prev => [
+          ...prev,
+          { sender: 'system', text: 'Foto recebida. Agora você pode começar a conversar normalmente!' }
+        ]);
+      }
     }
   };
 
@@ -71,7 +148,7 @@ export default function ChatBox() {
       recognitionRef.current.onresult = (event) => {
         const transcript = event.results[0][0].transcript;
         console.log('Transcrição:', transcript);
-        setInput(transcript); // coloca no input para você poder enviar
+        setInput(transcript);
       };
 
       recognitionRef.current.onerror = (event) => {
@@ -89,7 +166,6 @@ export default function ChatBox() {
       };
     }
 
-    // Protege com try/catch para evitar InvalidStateError
     try {
       recognitionRef.current.start();
       console.log('Reconhecimento iniciado');
@@ -125,9 +201,7 @@ export default function ChatBox() {
           <div
             key={index}
             style={{
-              alignSelf: 'center',
-              marginLeft: msg.sender === 'ai' ? '0' : 'auto',
-              marginRight: msg.sender === 'user' ? '0' : 'auto',
+              alignSelf: msg.sender === 'user' ? 'flex-end' : 'flex-start',
               maxWidth: '60%',
               fontSize: '1rem',
               lineHeight: '1.6',
@@ -135,7 +209,7 @@ export default function ChatBox() {
               color: '#000',
               padding: '0.75rem 1rem',
               borderRadius: '8px',
-              border: msg.sender === 'user' ? '1px solid #000' : '1px solid #333',
+              border: '1px solid #333',
               textAlign: 'left',
               whiteSpace: 'pre-wrap',
             }}
@@ -159,7 +233,6 @@ export default function ChatBox() {
           borderRadius: '8px',
           padding: '0.75rem 1rem',
         }}>
-          {/* Ícone de anexo */}
           <label
             style={{
               display: 'flex',
@@ -184,10 +257,9 @@ export default function ChatBox() {
             />
           </label>
 
-          {/* Input de texto */}
           <input
             type="text"
-            placeholder="Digite sua pergunta..."
+            placeholder="Digite sua resposta..."
             value={input}
             onChange={(e) => setInput(e.target.value)}
             style={{
@@ -202,14 +274,13 @@ export default function ChatBox() {
             onKeyDown={(e) => { if (e.key === 'Enter') handleSend(); }}
           />
 
-          {/* Ícone de microfone */}
           <button
             onClick={startRecognition}
             style={{
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              backgroundColor: isListening ? '#f00' : '#000', // vermelho se escutando
+              backgroundColor: isListening ? '#f00' : '#000',
               border: 'none',
               borderRadius: '50%',
               width: '40px',
@@ -223,7 +294,6 @@ export default function ChatBox() {
             <FiMic size={20} color="#fff" />
           </button>
 
-          {/* Botão de enviar com ícone de avião */}
           <button
             onClick={handleSend}
             style={{

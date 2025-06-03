@@ -1,10 +1,16 @@
-from app.core.agents import agent_prompt_engineer, agent_specialist, agent_pedagogical
+from app.core.agents.agent_prompt_engineer import AgentPromptEngineer
+from app.core.agents import agent_specialist, agent_pedagogical
 
-def run_pipeline(message: str, questionnaire: dict = None, attachment: str = None, audio: str = None) -> str:
+def run_pipeline(profile: dict, questionnaires: dict, message: str, thematic_input: str = None, attachment: str = None, audio: str = None) -> str:
+    # Instanciar o agente 1
+    prompt_engineer = AgentPromptEngineer()
+
     # Agente 1 - Fazedor de prompt
-    prompt, thematic = agent_prompt_engineer.run(
+    prompt, thematic = prompt_engineer.run(
+        profile=profile,
+        questionnaires=questionnaires,
         message=message,
-        questionnaire=questionnaire,
+        thematic_input=thematic_input,
         attachment=attachment,
         audio=audio
     )
@@ -20,7 +26,7 @@ def run_pipeline(message: str, questionnaire: dict = None, attachment: str = Non
     # Agente 3 - Pedagógico
     final_lesson = agent_pedagogical.run(
         raw_lesson=raw_lesson,
-        questionnaire=questionnaire
+        questionnaire=questionnaires
     )
     print(f"[Pipeline] Aula final revisada pelo pedagógico.")
 
