@@ -1,8 +1,27 @@
 'use client';
 
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import Header from '../../components/Header';
 
 export default function ProfilePage() {
+  const router = useRouter();
+
+  // Estados para armazenar status dos questionários
+  const [statusAprendizagem, setStatusAprendizagem] = useState('Não respondido');
+  const [statusSobreAluno, setStatusSobreAluno] = useState('Não respondido');
+  const [statusSobreResponsavel, setStatusSobreResponsavel] = useState('Não respondido');
+
+  // Redirecionar para questionário de aprendizagem
+  const handleAbrirQuestionarioAprendizagem = () => {
+    router.push('/profile/questionario-aprendizagem');
+  };
+
+  // Redirecionar para questionário de gostos (que será o "Sobre o Aluno")
+  const handleAbrirQuestionarioGostos = () => {
+    router.push('/profile/questionario-gostos');
+  };
+
   return (
     <div>
       <Header />
@@ -93,29 +112,37 @@ export default function ProfilePage() {
         {/* Questionários */}
         <div style={{ marginBottom: '2rem' }}>
           <h3>Teste de aprendizagem do Aluno</h3>
-          <p>Status: Não respondido</p>
-          <button style={{ padding: '0.5rem 1rem', marginTop: '0.5rem' }}>
-            Refazer Questionário
+          <p>Status: {statusAprendizagem}</p>
+          <button
+            onClick={handleAbrirQuestionarioAprendizagem}
+            style={{ padding: '0.5rem 1rem', marginTop: '0.5rem' }}
+          >
+            {statusAprendizagem === 'Não respondido' ? 'Iniciar Questionário' : 'Refazer Questionário'}
           </button>
         </div>
 
         <div style={{ marginBottom: '2rem' }}>
-          <h3>Sobre o Aluno</h3>
-          <p>Status: Não respondido</p>
-          <button style={{ padding: '0.5rem 1rem', marginTop: '0.5rem' }}>
-            Refazer Questionário
+          <h3>Sobre o Aluno</h3> {/* <- este é o Questionário de Gostos */}
+          <p>Status: {statusSobreAluno}</p>
+          <button
+            onClick={handleAbrirQuestionarioGostos}
+            style={{ padding: '0.5rem 1rem', marginTop: '0.5rem' }}
+          >
+            {statusSobreAluno === 'Não respondido' ? 'Iniciar Questionário' : 'Refazer Questionário'}
           </button>
         </div>
 
         <div style={{ marginBottom: '2rem' }}>
           <h3>Sobre o responsável</h3>
-          <p>Status: Não respondido</p>
-          <button style={{ padding: '0.5rem 1rem', marginTop: '0.5rem' }}>
-            Refazer Questionário
+          <p>Status: {statusSobreResponsavel}</p>
+          <button
+            onClick={() => alert('Funcionalidade em construção')}
+            style={{ padding: '0.5rem 1rem', marginTop: '0.5rem' }}
+          >
+            {statusSobreResponsavel === 'Não respondido' ? 'Iniciar Questionário' : 'Refazer Questionário'}
           </button>
         </div>
       </div>
     </div>
   );
 }
-
