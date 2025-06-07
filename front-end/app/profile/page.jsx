@@ -7,19 +7,35 @@ import Header from '../../components/Header';
 export default function ProfilePage() {
   const router = useRouter();
 
-  // Estados para armazenar status dos questionários
+  // Estados
+  const [photoSrc, setPhotoSrc] = useState(null);
   const [statusAprendizagem, setStatusAprendizagem] = useState('Não respondido');
   const [statusSobreAluno, setStatusSobreAluno] = useState('Não respondido');
   const [statusSobreResponsavel, setStatusSobreResponsavel] = useState('Não respondido');
 
-  // Redirecionar para questionário de aprendizagem
+  // Handlers de navegação
   const handleAbrirQuestionarioAprendizagem = () => {
     router.push('/profile/questionario-aprendizagem');
   };
 
-  // Redirecionar para questionário de gostos (que será o "Sobre o Aluno")
   const handleAbrirQuestionarioGostos = () => {
     router.push('/profile/questionario-gostos');
+  };
+
+  const handleAbrirQuestionarioPais = () => {
+    router.push('/profile/questionario-pais');
+  };
+
+  // Handler de upload de foto
+  const handlePhotoChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = function (event) {
+        setPhotoSrc(event.target.result);
+      };
+      reader.readAsDataURL(file);
+    }
   };
 
   return (
@@ -45,13 +61,16 @@ export default function ProfilePage() {
                 overflow: 'hidden',
               }}
             >
-              <img
-                id="photo-preview"
-                src=""
-                alt="Clique para adicionar uma foto"
-                style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'none' }}
-              />
-              <span id="photo-placeholder">Adicionar Foto</span>
+              {photoSrc ? (
+                <img
+                  id="photo-preview"
+                  src={photoSrc}
+                  alt="Foto do perfil"
+                  style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                />
+              ) : (
+                <span id="photo-placeholder">Adicionar Foto</span>
+              )}
             </div>
           </label>
           <input
@@ -59,88 +78,177 @@ export default function ProfilePage() {
             id="profile-photo"
             accept="image/*"
             style={{ display: 'none' }}
-            onChange={(e) => {
-              const file = e.target.files[0];
-              if (file) {
-                const reader = new FileReader();
-                reader.onload = function (event) {
-                  const img = document.getElementById('photo-preview');
-                  const placeholder = document.getElementById('photo-placeholder');
-                  img.src = event.target.result;
-                  img.style.display = 'block';
-                  placeholder.style.display = 'none';
-                };
-                reader.readAsDataURL(file);
-              }
-            }}
+            onChange={handlePhotoChange}
           />
         </div>
 
         {/* Formulário */}
         <form>
           <div style={{ marginBottom: '1rem' }}>
-            <label>Nome do Aluno:</label>
-            <input type="text" style={{ width: '100%', padding: '0.5rem', marginTop: '0.5rem' }} />
+            <label style={{ fontWeight: 'bold' }}>Nome do Aluno:</label>
+            <input
+              type="text"
+              style={{
+                width: '100%',
+                padding: '0.5rem',
+                marginTop: '0.5rem',
+                border: 'none',
+                borderBottom: '1px solid #ccc',
+                outline: 'none',
+              }}
+              onFocus={(e) => (e.target.style.borderBottom = '1px solid black')}
+              onBlur={(e) => (e.target.style.borderBottom = e.target.value ? 'none' : '1px solid #ccc')}
+            />
           </div>
 
           <div style={{ marginBottom: '1rem' }}>
-            <label>Idade:</label>
-            <input type="number" style={{ width: '100%', padding: '0.5rem', marginTop: '0.5rem' }} />
+            <label style={{ fontWeight: 'bold' }}>Idade:</label>
+            <input
+              type="number"
+              style={{
+                width: '100%',
+                padding: '0.5rem',
+                marginTop: '0.5rem',
+                border: 'none',
+                borderBottom: '1px solid #ccc',
+                outline: 'none',
+              }}
+              onFocus={(e) => (e.target.style.borderBottom = '1px solid black')}
+              onBlur={(e) => (e.target.style.borderBottom = e.target.value ? 'none' : '1px solid #ccc')}
+            />
           </div>
 
           <div style={{ marginBottom: '1rem' }}>
-            <label>Ano Letivo:</label>
-            <input type="text" style={{ width: '100%', padding: '0.5rem', marginTop: '0.5rem' }} />
+            <label style={{ fontWeight: 'bold' }}>Ano Letivo:</label>
+            <input
+              type="text"
+              style={{
+                width: '100%',
+                padding: '0.5rem',
+                marginTop: '0.5rem',
+                border: 'none',
+                borderBottom: '1px solid #ccc',
+                outline: 'none',
+              }}
+              onFocus={(e) => (e.target.style.borderBottom = '1px solid black')}
+              onBlur={(e) => (e.target.style.borderBottom = e.target.value ? 'none' : '1px solid #ccc')}
+            />
           </div>
 
           <div style={{ marginBottom: '1rem' }}>
-            <label>Cidade:</label>
-            <input type="text" style={{ width: '100%', padding: '0.5rem', marginTop: '0.5rem' }} />
+            <label style={{ fontWeight: 'bold' }}>Cidade:</label>
+            <input
+              type="text"
+              style={{
+                width: '100%',
+                padding: '0.5rem',
+                marginTop: '0.5rem',
+                border: 'none',
+                borderBottom: '1px solid #ccc',
+                outline: 'none',
+              }}
+              onFocus={(e) => (e.target.style.borderBottom = '1px solid black')}
+              onBlur={(e) => (e.target.style.borderBottom = e.target.value ? 'none' : '1px solid #ccc')}
+            />
           </div>
 
           <div style={{ marginBottom: '1rem' }}>
-            <label>Região:</label>
-            <input type="text" style={{ width: '100%', padding: '0.5rem', marginTop: '0.5rem' }} />
+            <label style={{ fontWeight: 'bold' }}>Região:</label>
+            <input
+              type="text"
+              style={{
+                width: '100%',
+                padding: '0.5rem',
+                marginTop: '0.5rem',
+                border: 'none',
+                borderBottom: '1px solid #ccc',
+                outline: 'none',
+              }}
+              onFocus={(e) => (e.target.style.borderBottom = '1px solid black')}
+              onBlur={(e) => (e.target.style.borderBottom = e.target.value ? 'none' : '1px solid #ccc')}
+            />
           </div>
 
           <div style={{ marginBottom: '2rem' }}>
-            <label>Nome do responsável (Opcional):</label>
-            <input type="text" style={{ width: '100%', padding: '0.5rem', marginTop: '0.5rem' }} />
+            <label style={{ fontWeight: 'bold' }}>Nome do responsável (Opcional):</label>
+            <input
+              type="text"
+              style={{
+                width: '100%',
+                padding: '0.5rem',
+                marginTop: '0.5rem',
+                border: 'none',
+                borderBottom: '1px solid #ccc',
+                outline: 'none',
+              }}
+              onFocus={(e) => (e.target.style.borderBottom = '1px solid black')}
+              onBlur={(e) => (e.target.style.borderBottom = e.target.value ? 'none' : '1px solid #ccc')}
+            />
           </div>
         </form>
 
         {/* Questionários */}
         <div style={{ marginBottom: '2rem' }}>
-          <h3>Teste de aprendizagem do Aluno</h3>
-          <p>Status: {statusAprendizagem}</p>
-          <button
-            onClick={handleAbrirQuestionarioAprendizagem}
-            style={{ padding: '0.5rem 1rem', marginTop: '0.5rem' }}
-          >
-            {statusAprendizagem === 'Não respondido' ? 'Iniciar Questionário' : 'Refazer Questionário'}
-          </button>
+          <h3 style={{ fontWeight: 'bold' }}>Teste de aprendizagem do Aluno</h3>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+            <button
+              onClick={handleAbrirQuestionarioAprendizagem}
+              style={{
+                padding: '0.5rem 1rem',
+                backgroundColor: '#fff',
+                color: '#000',
+                border: '1px solid #000',
+                cursor: 'pointer',
+              }}
+            >
+              {statusAprendizagem === 'Não respondido' ? 'Iniciar Questionário' : 'Refazer Questionário'}
+            </button>
+            {statusAprendizagem === 'Não respondido' && (
+              <span style={{ color: 'red', fontWeight: 'bold' }}>Não foi feito ainda</span>
+            )}
+          </div>
         </div>
 
         <div style={{ marginBottom: '2rem' }}>
-          <h3>Sobre o Aluno</h3> {/* <- este é o Questionário de Gostos */}
-          <p>Status: {statusSobreAluno}</p>
-          <button
-            onClick={handleAbrirQuestionarioGostos}
-            style={{ padding: '0.5rem 1rem', marginTop: '0.5rem' }}
-          >
-            {statusSobreAluno === 'Não respondido' ? 'Iniciar Questionário' : 'Refazer Questionário'}
-          </button>
+          <h3 style={{ fontWeight: 'bold' }}>Sobre o Aluno</h3>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+            <button
+              onClick={handleAbrirQuestionarioGostos}
+              style={{
+                padding: '0.5rem 1rem',
+                backgroundColor: '#fff',
+                color: '#000',
+                border: '1px solid #000',
+                cursor: 'pointer',
+              }}
+            >
+              {statusSobreAluno === 'Não respondido' ? 'Iniciar Questionário' : 'Refazer Questionário'}
+            </button>
+            {statusSobreAluno === 'Não respondido' && (
+              <span style={{ color: 'red', fontWeight: 'bold' }}>Não foi feito ainda</span>
+            )}
+          </div>
         </div>
 
         <div style={{ marginBottom: '2rem' }}>
-          <h3>Sobre o responsável</h3>
-          <p>Status: {statusSobreResponsavel}</p>
-          <button
-            onClick={() => alert('Funcionalidade em construção')}
-            style={{ padding: '0.5rem 1rem', marginTop: '0.5rem' }}
-          >
-            {statusSobreResponsavel === 'Não respondido' ? 'Iniciar Questionário' : 'Refazer Questionário'}
-          </button>
+          <h3 style={{ fontWeight: 'bold' }}>Sobre o responsável</h3>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+            <button
+              onClick={handleAbrirQuestionarioPais}
+              style={{
+                padding: '0.5rem 1rem',
+                backgroundColor: '#fff',
+                color: '#000',
+                border: '1px solid #000',
+                cursor: 'pointer',
+              }}
+            >
+              {statusSobreResponsavel === 'Não respondido' ? 'Iniciar Questionário' : 'Refazer Questionário'}
+            </button>
+            {statusSobreResponsavel === 'Não respondido' && (
+              <span style={{ color: 'red', fontWeight: 'bold' }}>Não foi feito ainda</span>
+            )}
+          </div>
         </div>
       </div>
     </div>
