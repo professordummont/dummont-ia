@@ -2,10 +2,12 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.api import chat
-from app.api import profile  # 🚀 importamos as rotas de profile
+from app.api import profile
+from app.api import register
+from app.api import login  # 🚀 agora SIM estamos importando login!
 
-from app.models import profile as models  # 🚀 importamos os models
-from app.core import database  # 🚀 importamos a engine
+from app.models import profile as models
+from app.core import database
 
 app = FastAPI()
 
@@ -23,7 +25,9 @@ models.Base.metadata.create_all(bind=database.engine)
 
 # Incluir rotas
 app.include_router(chat.router, prefix="/api/chat")
-app.include_router(profile.router, prefix="/api/profile")  # 🚀 adiciona profile
+app.include_router(profile.router, prefix="/api/profile")
+app.include_router(register.router)
+app.include_router(login.router)  # 🚀 agora SIM adiciona login!
 
 # Rota de teste
 @app.get("/")

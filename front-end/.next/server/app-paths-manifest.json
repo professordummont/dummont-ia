@@ -1,7 +1,5 @@
 {
-  "/profile/page": "app/profile/page.js",
-  "/profile/questionario-pais/page": "app/profile/questionario-pais/page.js",
-  "/history/page": "app/history/page.js",
-  "/profile/questionario-aprendizagem/page": "app/profile/questionario-aprendizagem/page.js",
-  "/profile/questionario-gostos/page": "app/profile/questionario-gostos/page.js"
+  "/login/page": "app/login/page.js",
+  "/page": "app/page.js",
+  "/chat/page": "app/chat/page.js"
 }
