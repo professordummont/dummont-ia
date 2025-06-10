@@ -8,6 +8,7 @@ export default function ChatBox() {
   const [input, setInput] = useState('');
   const [isListening, setIsListening] = useState(false);
   const recognitionRef = useRef(null);
+  const endRef = useRef(null);
 
   const [conversationContext, setConversationContext] = useState({
     subject: '',
@@ -15,33 +16,21 @@ export default function ChatBox() {
     attachment: null
   });
 
-  const [conversationStep, setConversationStep] = useState(0); // controla a etapa da conversa
+  const [conversationStep, setConversationStep] = useState(0);
 
-  // Ao abrir o chat, envia a primeira pergunta do sistema
   useEffect(() => {
-    setMessages([
-      { sender: 'system', text: 'Olá! Para começarmos, qual matéria você está estudando?' }
-    ]);
+    setMessages([{ sender: 'system', text: 'Olá! Para começarmos, qual matéria você está estudando?' }]);
   }, []);
 
   const handleSend = async () => {
     if (!input.trim()) return;
-
-    // Adiciona a mensagem do usuário
     const userMessage = { sender: 'user', text: input };
     setMessages(prev => [...prev, userMessage]);
 
-    // Controle de etapa: preenche subject, thematic e libera o chat
     if (conversationStep === 0) {
       setConversationContext(prev => ({ ...prev, subject: input }));
       setConversationStep(1);
-
-      // Próxima pergunta vem como mensagem do sistema
-      setMessages(prev => [
-        ...prev,
-        { sender: 'system', text: 'Qual a temática da aula? (se você souber)' }
-      ]);
-
+      setMessages(prev => [...prev, { sender: 'system', text: 'Qual a temática da aula? (se você souber)' }]);
       setInput('');
       return;
     }
@@ -49,47 +38,29 @@ export default function ChatBox() {
     if (conversationStep === 1) {
       setConversationContext(prev => ({ ...prev, thematic: input }));
       setConversationStep(2);
-
-      setMessages(prev => [
-        ...prev,
-        { sender: 'system', text: 'Deseja enviar fotos de livro ou apostila? (clique no clipe 📎). Se não, digite "Não".' }
-      ]);
-
+      setMessages(prev => [...prev, { sender: 'system', text: 'Deseja enviar fotos de livro ou apostila? (clique no clipe 📎). Se não, digite "Não".' }]);
       setInput('');
       return;
     }
 
     if (conversationStep === 2) {
-      // Se o usuário disser "não", avança para conversa normal
       if (input.toLowerCase() === 'não' || input.toLowerCase() === 'nao') {
         setConversationStep(3);
-
-        setMessages(prev => [
-          ...prev,
-          { sender: 'system', text: 'Perfeito! Agora você pode fazer sua pergunta ou enviar o que deseja aprender.' }
-        ]);
+        setMessages(prev => [...prev, { sender: 'system', text: 'Perfeito! Agora você pode fazer sua pergunta ou enviar o que deseja aprender.' }]);
       } else {
-        // Se o usuário digitar algo, ainda pode ser tratado como texto
-        setMessages(prev => [
-          ...prev,
-          { sender: 'system', text: 'Foto anexada ou texto recebido. Agora você pode começar a conversar normalmente!' }
-        ]);
+        setMessages(prev => [...prev, { sender: 'system', text: 'Foto anexada ou texto recebido. Agora você pode começar a conversar normalmente!' }]);
         setConversationStep(3);
       }
-
       setInput('');
       return;
     }
 
-    // Conversa normal (enviar para o backend)
     try {
       const payload = {
         message: input,
         subject: conversationContext.subject,
         thematic: conversationContext.thematic,
-        attachment: conversationContext.attachment
-          ? conversationContext.attachment.name
-          : null
+        attachment: conversationContext.attachment?.name || null
       };
 
       const response = await fetch('http://localhost:8000/api/chat/', {
@@ -99,7 +70,6 @@ export default function ChatBox() {
       });
 
       const data = await response.json();
-
       const aiResponse = { sender: 'ai', text: data.response };
       setMessages(prev => [...prev, aiResponse]);
     } catch (error) {
@@ -112,32 +82,17 @@ export default function ChatBox() {
   const handleFileChange = (e) => {
     const file = e.target.files[0];
     if (file) {
-      console.log('Arquivo selecionado:', file);
-
-      setConversationContext(prev => ({
-        ...prev,
-        attachment: file
-      }));
-
-      // Se ainda está na etapa 2, avança
+      setConversationContext(prev => ({ ...prev, attachment: file }));
       if (conversationStep === 2) {
         setConversationStep(3);
-
-        setMessages(prev => [
-          ...prev,
-          { sender: 'system', text: 'Foto recebida. Agora você pode começar a conversar normalmente!' }
-        ]);
+        setMessages(prev => [...prev, { sender: 'system', text: 'Foto recebida. Agora você pode começar a conversar normalmente!' }]);
       }
     }
   };
 
   const startRecognition = () => {
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-
-    if (!SpeechRecognition) {
-      alert('Seu navegador não suporta reconhecimento de fala.');
-      return;
-    }
+    if (!SpeechRecognition) return alert('Seu navegador não suporta reconhecimento de fala.');
 
     if (!recognitionRef.current) {
       recognitionRef.current = new SpeechRecognition();
@@ -147,34 +102,18 @@ export default function ChatBox() {
 
       recognitionRef.current.onresult = (event) => {
         const transcript = event.results[0][0].transcript;
-        console.log('Transcrição:', transcript);
         setInput(transcript);
       };
 
-      recognitionRef.current.onerror = (event) => {
-        console.error('Erro no reconhecimento:', event.error);
-      };
-
-      recognitionRef.current.onstart = () => {
-        console.log('Reconhecimento começou');
-        setIsListening(true);
-      };
-
-      recognitionRef.current.onend = () => {
-        console.log('Reconhecimento terminou');
-        setIsListening(false);
-      };
+      recognitionRef.current.onerror = (event) => console.error('Erro no reconhecimento:', event.error);
+      recognitionRef.current.onstart = () => setIsListening(true);
+      recognitionRef.current.onend = () => setIsListening(false);
     }
 
     try {
       recognitionRef.current.start();
-      console.log('Reconhecimento iniciado');
     } catch (error) {
-      if (error.name === 'InvalidStateError') {
-        console.warn('Reconhecimento já em execução');
-      } else {
-        console.error('Erro ao iniciar reconhecimento:', error);
-      }
+      if (error.name !== 'InvalidStateError') console.error('Erro ao iniciar reconhecimento:', error);
     }
   };
 
@@ -182,20 +121,20 @@ export default function ChatBox() {
     <div style={{
       display: 'flex',
       flexDirection: 'column',
-      height: 'calc(100vh - 64px)',
-      backgroundColor: '#fff',
-      color: '#000',
+      height: '100vh',
+      background: '#f9f9f9',
+      fontFamily: 'Inter, sans-serif',
+      position: 'relative'
     }}>
       <div style={{
-        flex: '1 1 auto',
-        maxHeight: 'calc(100vh - 64px - 220px)',
-        overflowY: 'auto',
-        padding: '2rem',
+        flex: 1,
+        padding: '1.5rem',
         display: 'flex',
         flexDirection: 'column',
         justifyContent: 'flex-start',
         alignItems: 'center',
         gap: '1rem',
+        overflowY: 'auto'
       }}>
         {messages.map((msg, index) => (
           <div
@@ -204,111 +143,106 @@ export default function ChatBox() {
               alignSelf: msg.sender === 'user' ? 'flex-end' : 'flex-start',
               maxWidth: '60%',
               fontSize: '1rem',
-              lineHeight: '1.6',
-              backgroundColor: '#fff',
-              color: '#000',
-              padding: '0.75rem 1rem',
-              borderRadius: '8px',
-              border: '1px solid #333',
-              textAlign: 'left',
-              whiteSpace: 'pre-wrap',
+              background: msg.sender === 'user' ? '#000' : '#fff',
+              color: msg.sender === 'user' ? '#fff' : '#000',
+              padding: '0.85rem 1.25rem',
+              borderRadius: '1rem',
+              boxShadow: '0 2px 6px rgba(0,0,0,0.1)',
+              border: msg.sender === 'user' ? 'none' : '1px solid #ccc',
+              lineHeight: '1.5'
             }}
           >
             {msg.text}
           </div>
         ))}
+        <div ref={endRef} />
       </div>
 
       <div style={{
-        padding: '1.5rem',
-        borderTop: 'none',
-        backgroundColor: '#fff',
+        padding: '1rem',
+        borderTop: '1px solid #eaeaea',
+        backgroundColor: '#f9f9f9',
+        position: 'fixed',
+        bottom: 0,
+        left: 0,
+        width: '100%'
       }}>
         <div style={{
           display: 'flex',
           alignItems: 'center',
           maxWidth: '800px',
           margin: '0 auto',
+          background: '#fff',
           border: '1px solid #ddd',
-          borderRadius: '8px',
-          padding: '0.75rem 1rem',
+          borderRadius: '12px',
+          padding: '0.75rem 1rem'
         }}>
-          <label
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              backgroundColor: '#000',
-              border: 'none',
-              borderRadius: '50%',
-              width: '40px',
-              height: '40px',
-              cursor: 'pointer',
-              marginRight: '0.5rem',
-            }}
-            title="Anexar arquivo"
-          >
+          <label style={{
+            backgroundColor: '#000',
+            borderRadius: '50%',
+            width: '40px',
+            height: '40px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            cursor: 'pointer',
+            marginRight: '0.75rem'
+          }}>
             <FiPaperclip size={20} color="#fff" />
-            <input
-              type="file"
-              accept="image/*"
-              style={{ display: 'none' }}
-              onChange={handleFileChange}
-            />
+            <input type="file" accept="image/*" style={{ display: 'none' }} onChange={handleFileChange} />
           </label>
 
           <input
             type="text"
-            placeholder="Digite sua resposta..."
             value={input}
             onChange={(e) => setInput(e.target.value)}
+            placeholder="Digite sua pergunta..."
+            onKeyDown={(e) => { if (e.key === 'Enter') handleSend(); }}
             style={{
               flex: 1,
-              padding: '1.25rem',
-              fontSize: '1.125rem',
+              fontSize: '1rem',
+              padding: '0.85rem 1rem',
               border: 'none',
               outline: 'none',
-              backgroundColor: '#fff',
-              color: '#000',
+              background: '#f5f5f5',
+              borderRadius: '8px'
             }}
-            onKeyDown={(e) => { if (e.key === 'Enter') handleSend(); }}
           />
 
           <button
             onClick={startRecognition}
+            title={isListening ? 'Escutando...' : 'Gravar áudio'}
             style={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              backgroundColor: isListening ? '#f00' : '#000',
-              border: 'none',
+              marginLeft: '0.75rem',
+              background: isListening ? '#e74c3c' : '#000',
               borderRadius: '50%',
               width: '40px',
               height: '40px',
-              cursor: 'pointer',
-              marginLeft: '0.5rem',
-              marginRight: '0.5rem',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              border: 'none',
+              cursor: 'pointer'
             }}
-            title={isListening ? 'Escutando...' : 'Gravar áudio'}
           >
             <FiMic size={20} color="#fff" />
           </button>
 
           <button
             onClick={handleSend}
+            title="Enviar"
             style={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              backgroundColor: '#000',
-              border: 'none',
+              marginLeft: '0.5rem',
+              background: '#000',
               borderRadius: '50%',
               width: '40px',
               height: '40px',
-              cursor: 'pointer',
-              marginLeft: '0.5rem',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              border: 'none',
+              cursor: 'pointer'
             }}
-            title="Enviar"
           >
             <FiSend size={20} color="#fff" />
           </button>

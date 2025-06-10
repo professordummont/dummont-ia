@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 
 const perguntas = [
@@ -17,21 +17,53 @@ const perguntas = [
 ];
 
 export default function QuestionarioAprendizagem() {
+  const router = useRouter();
+  const userId = 1; // Substituir com ID do usuário autenticado futuramente
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [respostas, setRespostas] = useState(Array(perguntas.length).fill(''));
-  const router = useRouter();
+  const [isLoading, setIsLoading] = useState(true);
 
-  const handleRespostaChange = (e) => {
-    const newRespostas = [...respostas];
-    newRespostas[currentQuestion] = e.target.value;
-    setRespostas(newRespostas);
+  useEffect(() => {
+    const carregarRespostas = async () => {
+      try {
+        const res = await fetch(`/api/questionario-aprendizagem?userId=${userId}`);
+        const data = await res.json();
+        if (Array.isArray(data)) {
+          setRespostas(data);
+        }
+      } catch (error) {
+        console.error('Erro ao carregar respostas:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    carregarRespostas();
+  }, []);
+
+  const salvarRespostas = async (respostasParaSalvar) => {
+    try {
+      await fetch('/api/questionario-aprendizagem', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId, respostas: respostasParaSalvar })
+      });
+    } catch (error) {
+      console.error('Erro ao salvar respostas:', error);
+    }
   };
 
-  const handleNext = () => {
+  const handleRespostaChange = async (e) => {
+    const novasRespostas = [...respostas];
+    novasRespostas[currentQuestion] = e.target.value;
+    setRespostas(novasRespostas);
+    await salvarRespostas(novasRespostas);
+  };
+
+  const handleNext = async () => {
     if (currentQuestion < perguntas.length - 1) {
       setCurrentQuestion(currentQuestion + 1);
     } else {
-      console.log("Respostas:", respostas);
+      await salvarRespostas(respostas);
       alert('Questionário de aprendizagem concluído! Obrigado.');
       router.push('/profile');
     }
@@ -47,10 +79,16 @@ export default function QuestionarioAprendizagem() {
     router.push('/profile');
   };
 
+  if (isLoading) {
+    return (
+      <div style={{ padding: '2rem', textAlign: 'center' }}>
+        <p>Carregando questionário...</p>
+      </div>
+    );
+  }
+
   return (
     <div style={{ padding: '2rem', maxWidth: '800px', margin: '0 auto', position: 'relative', minHeight: '100vh' }}>
-      
-      {/* Botão Voltar no canto extremo esquerdo superior */}
       <button
         onClick={handleVoltar}
         style={{
@@ -66,24 +104,16 @@ export default function QuestionarioAprendizagem() {
           fontWeight: 'bold',
           transition: 'opacity 0.2s'
         }}
-        onMouseEnter={(e) => e.target.style.opacity = '0.6'}
-        onMouseLeave={(e) => e.target.style.opacity = '1'}
+        onMouseEnter={(e) => (e.currentTarget.style.opacity = '0.6')}
+        onMouseLeave={(e) => (e.currentTarget.style.opacity = '1')}
       >
         Voltar
       </button>
 
-      {/* Título centralizado */}
-      <h2 style={{
-        marginBottom: '1rem',
-        marginTop: '2rem',
-        textAlign: 'center',
-        fontSize: '1.8rem',
-        color: '#000'
-      }}>
+      <h2 style={{ marginBottom: '1rem', marginTop: '2rem', textAlign: 'center', fontSize: '1.8rem' }}>
         Teste de Aprendizagem do Aluno
       </h2>
 
-      {/* Pergunta */}
       <p style={{ textAlign: 'left', marginBottom: '0.5rem' }}>
         Pergunta {currentQuestion + 1} de {perguntas.length}
       </p>
@@ -92,7 +122,6 @@ export default function QuestionarioAprendizagem() {
         {perguntas[currentQuestion]}
       </h3>
 
-      {/* Caixa de texto */}
       <textarea
         value={respostas[currentQuestion]}
         onChange={handleRespostaChange}
@@ -105,12 +134,7 @@ export default function QuestionarioAprendizagem() {
         }}
       ></textarea>
 
-      {/* Botões Anterior / Próxima */}
-      <div style={{
-        marginTop: '0.5rem',
-        display: 'flex',
-        justifyContent: 'space-between'
-      }}>
+      <div style={{ marginTop: '0.5rem', display: 'flex', justifyContent: 'space-between' }}>
         <button
           onClick={handlePrevious}
           disabled={currentQuestion === 0}
@@ -126,10 +150,10 @@ export default function QuestionarioAprendizagem() {
             transition: 'opacity 0.2s'
           }}
           onMouseEnter={(e) => {
-            if (currentQuestion !== 0) e.target.style.opacity = '0.6';
+            if (currentQuestion !== 0) e.currentTarget.style.opacity = '0.6';
           }}
           onMouseLeave={(e) => {
-            if (currentQuestion !== 0) e.target.style.opacity = '1';
+            if (currentQuestion !== 0) e.currentTarget.style.opacity = '1';
           }}
         >
           Anterior
@@ -147,8 +171,8 @@ export default function QuestionarioAprendizagem() {
             cursor: 'pointer',
             transition: 'opacity 0.2s'
           }}
-          onMouseEnter={(e) => e.target.style.opacity = '0.6'}
-          onMouseLeave={(e) => e.target.style.opacity = '1'}
+          onMouseEnter={(e) => (e.currentTarget.style.opacity = '0.6')}
+          onMouseLeave={(e) => (e.currentTarget.style.opacity = '1')}
         >
           {currentQuestion < perguntas.length - 1 ? 'Próxima' : 'Enviar'}
         </button>

@@ -10,9 +10,7 @@ export default function Home() {
 
   useEffect(() => {
     const userId = localStorage.getItem('user_id');
-
     if (userId) {
-      console.log('Usuário já logado → redirecionando para /chat');
       router.push('/chat');
     }
   }, [router]);
@@ -25,57 +23,62 @@ export default function Home() {
         alignItems: 'center',
         justifyContent: 'center',
         height: '100vh',
-        backgroundColor: '#ffffff',
-        fontFamily: 'Arial, sans-serif',
-        padding: '20px',
+        backgroundColor: '#f9f9f9',
+        fontFamily: 'Inter, sans-serif',
+        padding: '2rem',
       }}
     >
-      {/* Container para logo + textos */}
       <div
         style={{
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          gap: '40px',
-          marginBottom: '20px',
+          flexWrap: 'wrap',
+          gap: '3rem',
+          textAlign: 'left',
         }}
       >
-        {/* Logo — aumentei */}
-        <Image src="/logo.png" alt="Dummont AI Logo" width={240} height={240} />
+        <Image
+          src="/logo.png"
+          alt="Dummont AI Logo"
+          width={200}
+          height={200}
+          style={{ borderRadius: '20px', boxShadow: '0 4px 20px rgba(0,0,0,0.1)' }}
+        />
 
-        {/* Título + Frase + Botões */}
-        <div style={{ textAlign: 'left' }}>
-          <h1 style={{ fontSize: '4rem', color: '#111', margin: 0 }}>
+        <div>
+          <h1 style={{ fontSize: '3.5rem', fontWeight: 700, color: '#111', marginBottom: '1rem' }}>
             Dummont AI
           </h1>
 
-          {/* Frase */}
           <p
             style={{
-              fontSize: '1.5rem',
+              fontSize: '1.25rem',
               color: '#555',
-              marginTop: '15px',
               maxWidth: '500px',
+              lineHeight: '1.6',
             }}
           >
             Uma nova maneira de aprender. O conteúdo da maneira como você gosta de estudar.
           </p>
 
-          {/* Botões — abaixo da frase */}
-          <div style={{ display: 'flex', gap: '20px', marginTop: '20px' }}>
+          <div style={{ display: 'flex', gap: '1.25rem', marginTop: '2rem' }}>
             <Link href="/login">
               <button
                 style={{
-                  padding: '15px 30px',
+                  padding: '0.9rem 2rem',
                   fontSize: '1rem',
-                  fontWeight: 'bold',
+                  fontWeight: 600,
                   color: '#fff',
-                  backgroundColor: '#0066ff',
+                  backgroundColor: '#000',
                   border: 'none',
-                  borderRadius: '8px',
+                  borderRadius: '12px',
                   cursor: 'pointer',
-                  transition: 'background-color 0.3s ease',
+                  boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+                  transition: 'transform 0.2s ease-in-out',
                 }}
+                onMouseOver={(e) => (e.currentTarget.style.transform = 'scale(1.05)')}
+                onMouseOut={(e) => (e.currentTarget.style.transform = 'scale(1)')}
               >
                 Entrar
               </button>
@@ -84,16 +87,19 @@ export default function Home() {
             <Link href="/register">
               <button
                 style={{
-                  padding: '15px 30px',
+                  padding: '0.9rem 2rem',
                   fontSize: '1rem',
-                  fontWeight: 'bold',
-                  color: '#0066ff',
-                  backgroundColor: '#f5f5f5',
-                  border: '2px solid #0066ff',
-                  borderRadius: '8px',
+                  fontWeight: 600,
+                  color: '#000',
+                  backgroundColor: '#fff',
+                  border: '2px solid #000',
+                  borderRadius: '12px',
                   cursor: 'pointer',
-                  transition: 'background-color 0.3s ease, color 0.3s ease',
+                  boxShadow: '0 4px 12px rgba(0,0,0,0.05)',
+                  transition: 'transform 0.2s ease-in-out, background 0.2s ease',
                 }}
+                onMouseOver={(e) => (e.currentTarget.style.transform = 'scale(1.05)')}
+                onMouseOut={(e) => (e.currentTarget.style.transform = 'scale(1)')}
               >
                 Inscrever-se
               </button>

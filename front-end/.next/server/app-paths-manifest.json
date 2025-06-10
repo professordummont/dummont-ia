@@ -1,9 +1,11 @@
 {
+  "/api/questionario-aprendizagem/route": "app/api/questionario-aprendizagem/route.js",
+  "/api/questionario-pais/route": "app/api/questionario-pais/route.js",
+  "/api/questionario-gostos/route": "app/api/questionario-gostos/route.js",
+  "/page": "app/page.js",
+  "/login/page": "app/login/page.js",
   "/register/page": "app/register/page.js",
   "/chat/page": "app/chat/page.js",
-  "/login/page": "app/login/page.js",
   "/profile/page": "app/profile/page.js",
-  "/history/page": "app/history/page.js",
-  "/page": "app/page.js",
-  "/profile/questionario-aprendizagem/page": "app/profile/questionario-aprendizagem/page.js"
+  "/history/page": "app/history/page.js"
 }

@@ -1,255 +1,248 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Header from '../../components/Header';
 
 export default function ProfilePage() {
   const router = useRouter();
+  const userId = 1;
 
-  // Estados
   const [photoSrc, setPhotoSrc] = useState(null);
-  const [statusAprendizagem, setStatusAprendizagem] = useState('Não respondido');
-  const [statusSobreAluno, setStatusSobreAluno] = useState('Não respondido');
-  const [statusSobreResponsavel, setStatusSobreResponsavel] = useState('Não respondido');
+  const [statusAprendizagem, setStatusAprendizagem] = useState('Carregando...');
+  const [statusSobreAluno, setStatusSobreAluno] = useState('Carregando...');
+  const [statusSobreResponsavel, setStatusSobreResponsavel] = useState('Carregando...');
 
-  // Handlers de navegação
-  const handleAbrirQuestionarioAprendizagem = () => {
-    router.push('/profile/questionario-aprendizagem');
+  const [formData, setFormData] = useState({
+    student_name: '',
+    age: '',
+    grade: '',
+    city: '',
+    region: '',
+    guardian_name: ''
+  });
+
+  const fieldMap = {
+    'Nome do Aluno': 'student_name',
+    'Idade': 'age',
+    'Ano Letivo': 'grade',
+    'Cidade': 'city',
+    'Região': 'region',
+    'Nome do responsável (Opcional)': 'guardian_name'
   };
 
-  const handleAbrirQuestionarioGostos = () => {
-    router.push('/profile/questionario-gostos');
+  const verificarStatus = async (url, setStatus, tamanhoEsperado) => {
+    try {
+      const res = await fetch(url);
+      const data = await res.json();
+      if (!data || !Array.isArray(data)) return setStatus('Não respondido');
+
+      const total = tamanhoEsperado ?? data.length;
+      const respondidas = data.filter((r) => r && r.trim() !== '').length;
+
+      if (respondidas === 0) setStatus('Não respondido');
+      else if (respondidas < total) setStatus('Incompleto');
+      else setStatus('Respondido');
+    } catch (error) {
+      console.error(`Erro ao verificar status de ${url}`, error);
+      setStatus('Erro');
+    }
   };
 
-  const handleAbrirQuestionarioPais = () => {
-    router.push('/profile/questionario-pais');
+  const handleSalvarPerfil = async () => {
+    const payload = {
+      ...formData,
+      photo: photoSrc ?? null
+    };
+
+    const res = await fetch('/api/perfil', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+
+    const json = await res.json();
+    if (json.success) {
+      alert('Perfil salvo com sucesso!');
+    } else {
+      alert('Erro ao salvar perfil.');
+    }
   };
 
-  // Handler de upload de foto
+  useEffect(() => {
+    verificarStatus(`/api/questionario-aprendizagem?userId=${userId}`, setStatusAprendizagem, 10);
+    verificarStatus(`/api/questionario-gostos?userId=${userId}`, setStatusSobreAluno, 7);
+    verificarStatus(`/api/questionario-pais?userId=${userId}`, setStatusSobreResponsavel, 7);
+  }, []);
+
   const handlePhotoChange = (e) => {
     const file = e.target.files[0];
     if (file) {
       const reader = new FileReader();
-      reader.onload = function (event) {
-        setPhotoSrc(event.target.result);
-      };
+      reader.onload = (event) => setPhotoSrc(event.target.result);
       reader.readAsDataURL(file);
     }
   };
 
-  return (
-    <div>
-      <Header />
-      <div style={{ padding: '2rem', maxWidth: '600px', margin: '0 auto' }}>
-        <h2 style={{ marginBottom: '1.5rem' }}>Perfil do Usuário</h2>
+  const renderStatus = (status) => {
+    const colors = {
+      'Não respondido': '#e74c3c',
+      'Incompleto': '#f39c12',
+      'Respondido': '#27ae60',
+    };
+    const icons = {
+      'Não respondido': '❌',
+      'Incompleto': '⚠️',
+      'Respondido': '✅',
+    };
+    return (
+      <span style={{ color: colors[status], fontWeight: 'bold' }}>
+        {icons[status]} {status === 'Não respondido' ? 'Não foi feito ainda' : status === 'Incompleto' ? 'Precisa finalizar' : 'Concluído'}
+      </span>
+    );
+  };
 
-        {/* Campo de Foto */}
-        <div style={{ marginBottom: '2rem', textAlign: 'center' }}>
+  const formFields = [
+    'Nome do Aluno',
+    'Idade',
+    'Ano Letivo',
+    'Cidade',
+    'Região',
+    'Nome do responsável (Opcional)'
+  ];
+
+  return (
+    <div style={{ backgroundColor: '#f9f9f9', minHeight: '100vh', fontFamily: 'Inter, sans-serif', overflowX: 'hidden' }}>
+      <Header />
+      <div style={{ padding: '2rem 1rem', maxWidth: '960px', margin: '0 auto' }}>
+        <h2 style={{ marginBottom: '2rem', fontSize: '2rem', textAlign: 'center' }}>Perfil do Usuário</h2>
+
+        {/* Foto */}
+        <div style={{ textAlign: 'center', marginBottom: '2.5rem' }}>
           <label htmlFor="profile-photo">
             <div
               style={{
-                width: '150px',
-                height: '150px',
+                width: '160px',
+                height: '160px',
                 borderRadius: '50%',
-                backgroundColor: '#f0f0f0',
+                backgroundColor: '#eee',
                 margin: '0 auto',
+                overflow: 'hidden',
+                boxShadow: '0 4px 20px rgba(0,0,0,0.1)',
+                cursor: 'pointer',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                cursor: 'pointer',
-                overflow: 'hidden',
+                transition: 'box-shadow 0.3s ease'
               }}
             >
               {photoSrc ? (
-                <img
-                  id="photo-preview"
-                  src={photoSrc}
-                  alt="Foto do perfil"
-                  style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                />
+                <img src={photoSrc} alt="Foto do perfil" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
               ) : (
-                <span id="photo-placeholder">Adicionar Foto</span>
+                <span style={{ color: '#888' }}>Adicionar Foto</span>
               )}
             </div>
           </label>
-          <input
-            type="file"
-            id="profile-photo"
-            accept="image/*"
-            style={{ display: 'none' }}
-            onChange={handlePhotoChange}
-          />
+          <input type="file" id="profile-photo" accept="image/*" style={{ display: 'none' }} onChange={handlePhotoChange} />
         </div>
 
         {/* Formulário */}
-        <form>
-          <div style={{ marginBottom: '1rem' }}>
-            <label style={{ fontWeight: 'bold' }}>Nome do Aluno:</label>
-            <input
-              type="text"
-              style={{
-                width: '100%',
-                padding: '0.5rem',
-                marginTop: '0.5rem',
-                border: 'none',
-                borderBottom: '1px solid #ccc',
-                outline: 'none',
-              }}
-              onFocus={(e) => (e.target.style.borderBottom = '1px solid black')}
-              onBlur={(e) => (e.target.style.borderBottom = e.target.value ? 'none' : '1px solid #ccc')}
-            />
-          </div>
-
-          <div style={{ marginBottom: '1rem' }}>
-            <label style={{ fontWeight: 'bold' }}>Idade:</label>
-            <input
-              type="number"
-              style={{
-                width: '100%',
-                padding: '0.5rem',
-                marginTop: '0.5rem',
-                border: 'none',
-                borderBottom: '1px solid #ccc',
-                outline: 'none',
-              }}
-              onFocus={(e) => (e.target.style.borderBottom = '1px solid black')}
-              onBlur={(e) => (e.target.style.borderBottom = e.target.value ? 'none' : '1px solid #ccc')}
-            />
-          </div>
-
-          <div style={{ marginBottom: '1rem' }}>
-            <label style={{ fontWeight: 'bold' }}>Ano Letivo:</label>
-            <input
-              type="text"
-              style={{
-                width: '100%',
-                padding: '0.5rem',
-                marginTop: '0.5rem',
-                border: 'none',
-                borderBottom: '1px solid #ccc',
-                outline: 'none',
-              }}
-              onFocus={(e) => (e.target.style.borderBottom = '1px solid black')}
-              onBlur={(e) => (e.target.style.borderBottom = e.target.value ? 'none' : '1px solid #ccc')}
-            />
-          </div>
-
-          <div style={{ marginBottom: '1rem' }}>
-            <label style={{ fontWeight: 'bold' }}>Cidade:</label>
-            <input
-              type="text"
-              style={{
-                width: '100%',
-                padding: '0.5rem',
-                marginTop: '0.5rem',
-                border: 'none',
-                borderBottom: '1px solid #ccc',
-                outline: 'none',
-              }}
-              onFocus={(e) => (e.target.style.borderBottom = '1px solid black')}
-              onBlur={(e) => (e.target.style.borderBottom = e.target.value ? 'none' : '1px solid #ccc')}
-            />
-          </div>
-
-          <div style={{ marginBottom: '1rem' }}>
-            <label style={{ fontWeight: 'bold' }}>Região:</label>
-            <input
-              type="text"
-              style={{
-                width: '100%',
-                padding: '0.5rem',
-                marginTop: '0.5rem',
-                border: 'none',
-                borderBottom: '1px solid #ccc',
-                outline: 'none',
-              }}
-              onFocus={(e) => (e.target.style.borderBottom = '1px solid black')}
-              onBlur={(e) => (e.target.style.borderBottom = e.target.value ? 'none' : '1px solid #ccc')}
-            />
-          </div>
-
-          <div style={{ marginBottom: '2rem' }}>
-            <label style={{ fontWeight: 'bold' }}>Nome do responsável (Opcional):</label>
-            <input
-              type="text"
-              style={{
-                width: '100%',
-                padding: '0.5rem',
-                marginTop: '0.5rem',
-                border: 'none',
-                borderBottom: '1px solid #ccc',
-                outline: 'none',
-              }}
-              onFocus={(e) => (e.target.style.borderBottom = '1px solid black')}
-              onBlur={(e) => (e.target.style.borderBottom = e.target.value ? 'none' : '1px solid #ccc')}
-            />
-          </div>
-        </form>
-
-        {/* Questionários */}
-        <div style={{ marginBottom: '2rem' }}>
-          <h3 style={{ fontWeight: 'bold' }}>Teste de aprendizagem do Aluno</h3>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-            <button
-              onClick={handleAbrirQuestionarioAprendizagem}
-              style={{
-                padding: '0.5rem 1rem',
-                backgroundColor: '#fff',
-                color: '#000',
-                border: '1px solid #000',
-                cursor: 'pointer',
-              }}
-            >
-              {statusAprendizagem === 'Não respondido' ? 'Iniciar Questionário' : 'Refazer Questionário'}
-            </button>
-            {statusAprendizagem === 'Não respondido' && (
-              <span style={{ color: 'red', fontWeight: 'bold' }}>Não foi feito ainda</span>
-            )}
-          </div>
+        <div style={{
+          background: '#fff',
+          padding: '2.5rem',
+          borderRadius: '20px',
+          boxShadow: '0 4px 24px rgba(0,0,0,0.06)',
+          marginBottom: '2rem',
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
+          gap: '2rem'
+        }}>
+          {formFields.map((field, idx) => (
+            <div key={idx} style={{ display: 'flex', flexDirection: 'column' }}>
+              <label style={{ marginBottom: '0.5rem', fontWeight: 600 }}>{field}</label>
+              <input
+                type={field === 'Idade' ? 'number' : 'text'}
+                placeholder={field}
+                value={formData[fieldMap[field]]}
+                onChange={(e) => setFormData({ ...formData, [fieldMap[field]]: e.target.value })}
+                style={{
+                  padding: '0.85rem 1rem',
+                  borderRadius: '12px',
+                  border: '1px solid #d0d0d0',
+                  backgroundColor: '#f5f7fa',
+                  fontSize: '1rem',
+                  outline: 'none',
+                  transition: 'border 0.2s ease-in-out'
+                }}
+              />
+            </div>
+          ))}
         </div>
 
-        <div style={{ marginBottom: '2rem' }}>
-          <h3 style={{ fontWeight: 'bold' }}>Sobre o Aluno</h3>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-            <button
-              onClick={handleAbrirQuestionarioGostos}
-              style={{
-                padding: '0.5rem 1rem',
-                backgroundColor: '#fff',
-                color: '#000',
-                border: '1px solid #000',
-                cursor: 'pointer',
-              }}
-            >
-              {statusSobreAluno === 'Não respondido' ? 'Iniciar Questionário' : 'Refazer Questionário'}
-            </button>
-            {statusSobreAluno === 'Não respondido' && (
-              <span style={{ color: 'red', fontWeight: 'bold' }}>Não foi feito ainda</span>
-            )}
-          </div>
+        <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '3rem' }}>
+          <button
+            onClick={handleSalvarPerfil}
+            style={{
+              padding: '0.75rem 2rem',
+              backgroundColor: '#000',
+              color: '#fff',
+              border: 'none',
+              borderRadius: '8px',
+              fontSize: '1rem',
+              cursor: 'pointer'
+            }}
+          >
+            Salvar Perfil
+          </button>
         </div>
 
-        <div style={{ marginBottom: '2rem' }}>
-          <h3 style={{ fontWeight: 'bold' }}>Sobre o responsável</h3>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-            <button
-              onClick={handleAbrirQuestionarioPais}
-              style={{
-                padding: '0.5rem 1rem',
-                backgroundColor: '#fff',
-                color: '#000',
-                border: '1px solid #000',
-                cursor: 'pointer',
-              }}
-            >
-              {statusSobreResponsavel === 'Não respondido' ? 'Iniciar Questionário' : 'Refazer Questionário'}
-            </button>
-            {statusSobreResponsavel === 'Não respondido' && (
-              <span style={{ color: 'red', fontWeight: 'bold' }}>Não foi feito ainda</span>
-            )}
+        {/* Título de Questionários */}
+        <h2 style={{ marginBottom: '1.5rem', fontSize: '1.75rem', fontWeight: '600' }}>Questionários</h2>
+
+        {[{
+          titulo: 'Teste de aprendizagem do Aluno',
+          status: statusAprendizagem,
+          onClick: () => router.push('/profile/questionario-aprendizagem')
+        }, {
+          titulo: 'Sobre o Aluno',
+          status: statusSobreAluno,
+          onClick: () => router.push('/profile/questionario-gostos')
+        }, {
+          titulo: 'Sobre o Responsável',
+          status: statusSobreResponsavel,
+          onClick: () => router.push('/profile/questionario-pais')
+        }].map(({ titulo, status, onClick }, index) => (
+          <div
+            key={index}
+            style={{
+              background: '#fff',
+              padding: '1.5rem',
+              borderRadius: '16px',
+              boxShadow: '0 2px 10px rgba(0,0,0,0.05)',
+              marginBottom: '1.5rem'
+            }}
+          >
+            <h3 style={{ marginBottom: '1rem', fontWeight: '600' }}>{titulo}</h3>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
+              <button
+                onClick={onClick}
+                style={{
+                  padding: '0.6rem 1.2rem',
+                  backgroundColor: '#000',
+                  color: '#fff',
+                  border: 'none',
+                  borderRadius: '8px',
+                  fontWeight: '500',
+                  cursor: 'pointer',
+                  letterSpacing: '0.3px'
+                }}
+              >
+                {status === 'Não respondido' ? 'Iniciar Questionário' : 'Refazer Questionário'}
+              </button>
+              {renderStatus(status)}
+            </div>
           </div>
-        </div>
+        ))}
       </div>
     </div>
   );

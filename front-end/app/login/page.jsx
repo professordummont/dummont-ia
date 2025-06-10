@@ -24,14 +24,9 @@ export default function Login() {
 
       if (response.ok) {
         alert('Login realizado com sucesso!');
-
-        // 🔥 Salva o user_id e user_nome no localStorage (para usar no chat ou perfil)
         localStorage.setItem('user_id', data.user_id);
         localStorage.setItem('user_nome', data.user_nome);
-
         console.log('🔵 Usuário autenticado:', data.user_id, data.user_nome);
-
-        // 🚀 Redireciona via SPA
         router.push('/chat');
       } else {
         alert(data.detail || 'Erro no login.');
@@ -46,15 +41,14 @@ export default function Login() {
     <main
       style={{
         minHeight: '100vh',
-        backgroundColor: '#ffffff',
-        fontFamily: 'Arial, sans-serif',
+        backgroundColor: '#f9f9f9',
+        fontFamily: 'Inter, sans-serif',
         padding: '40px 20px',
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
       }}
     >
-      {/* Logo no canto superior esquerdo */}
       <div
         style={{
           position: 'absolute',
@@ -67,62 +61,69 @@ export default function Login() {
         </Link>
       </div>
 
-      {/* Formulário centralizado */}
       <div
         style={{
           maxWidth: '400px',
           width: '100%',
-          marginTop: '100px',
+          marginTop: '120px',
+          background: '#fff',
+          padding: '40px',
+          borderRadius: '16px',
+          boxShadow: '0 8px 24px rgba(0, 0, 0, 0.06)',
           textAlign: 'center',
         }}
       >
-        <h1 style={{ fontSize: '2rem', marginBottom: '30px', color: '#111' }}>Login</h1>
+        <h1 style={{ fontSize: '2.25rem', marginBottom: '24px', color: '#111', fontWeight: '600' }}>Entrar</h1>
 
         <form
           onSubmit={handleSubmit}
-          autoComplete="on" // 🚀 ativa o autocomplete do navegador
-          style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}
+          autoComplete="on"
+          style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}
         >
           <input
             type="email"
-            name="email" // 🚀 importante
-            autoComplete="email" // 🚀 importante
+            name="email"
+            autoComplete="email"
             placeholder="Email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             required
             style={{
-              padding: '12px',
+              padding: '14px 16px',
               fontSize: '1rem',
-              borderRadius: '6px',
-              border: '1px solid #ccc', // corrigido
+              borderRadius: '10px',
+              border: '1px solid #d1d5db',
+              background: '#f9fafb',
+              transition: 'border 0.2s ease',
             }}
           />
           <input
             type="password"
-            name="password" // 🚀 importante
-            autoComplete="current-password" // 🚀 importante
+            name="password"
+            autoComplete="current-password"
             placeholder="Senha"
             value={senha}
             onChange={(e) => setSenha(e.target.value)}
             required
             style={{
-              padding: '12px',
+              padding: '14px 16px',
               fontSize: '1rem',
-              borderRadius: '6px',
-              border: '1px solid #ccc', // corrigido
+              borderRadius: '10px',
+              border: '1px solid #d1d5db',
+              background: '#f9fafb',
+              transition: 'border 0.2s ease',
             }}
           />
           <button
             type="submit"
             style={{
-              padding: '15px',
+              padding: '14px 0',
               fontSize: '1rem',
-              fontWeight: 'bold',
+              fontWeight: '600',
               color: '#fff',
               backgroundColor: '#0066ff',
               border: 'none',
-              borderRadius: '8px',
+              borderRadius: '10px',
               cursor: 'pointer',
               transition: 'background-color 0.3s ease',
             }}
@@ -130,6 +131,13 @@ export default function Login() {
             Entrar
           </button>
         </form>
+
+        <p style={{ marginTop: '20px', fontSize: '0.9rem', color: '#555' }}>
+          Não possui conta?{' '}
+          <Link href="/register" style={{ color: '#0066ff', fontWeight: '500', textDecoration: 'none' }}>
+            Inscreva-se
+          </Link>
+        </p>
       </div>
     </main>
   );

@@ -1,9 +1,12 @@
 // front-end/jsconfig.json
 {
   "compilerOptions": {
-    "baseUrl": ".",
+    "baseUrl": ".", // raiz do projeto
     "paths": {
-      "@components/*": ["components/*"]
+      "@/*": ["./*"],                  // permite usar @/lib, @/app, etc.
+      "@components/*": ["components/*"],
+      "@lib/*": ["lib/*"],
+      "@app/*": ["app/*"]
     }
   }
 }

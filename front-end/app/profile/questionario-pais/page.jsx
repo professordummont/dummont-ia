@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 
 const perguntas = [
@@ -12,140 +12,87 @@ const perguntas = [
   "Em vez de dar diretamente a resposta certa, incentive seu filho a pensar em diferentes maneiras de resolver o problema e a explicar como chegou à resposta que ele escolher.\n\nExplique com suas palavras o que você entendeu dessa instrução."
 ];
 
-export default function QuestionarioInterpretacaoResponsavel() {
+export default function QuestionarioPais() {
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [respostas, setRespostas] = useState(Array(perguntas.length).fill(''));
+  const [isLoading, setIsLoading] = useState(true);
   const router = useRouter();
+  const userId = 1; // Trocar por autenticação real
 
-  const handleRespostaChange = (e) => {
-    const newRespostas = [...respostas];
-    newRespostas[currentQuestion] = e.target.value;
-    setRespostas(newRespostas);
+  useEffect(() => {
+    const carregarRespostas = async () => {
+      try {
+        const res = await fetch(`/api/questionario-pais?userId=${userId}`);
+        const data = await res.json();
+        if (Array.isArray(data)) setRespostas(data);
+      } catch (err) {
+        console.error('Erro ao carregar respostas:', err);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    carregarRespostas();
+  }, []);
+
+  const salvarRespostas = async (respostasParaSalvar) => {
+    try {
+      await fetch('/api/questionario-pais', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId, respostas: respostasParaSalvar })
+      });
+    } catch (err) {
+      console.error('Erro ao salvar respostas:', err);
+    }
   };
 
-  const handleNext = () => {
+  const handleRespostaChange = async (e) => {
+    const novasRespostas = [...respostas];
+    novasRespostas[currentQuestion] = e.target.value;
+    setRespostas(novasRespostas);
+    await salvarRespostas(novasRespostas);
+  };
+
+  const handleNext = async () => {
     if (currentQuestion < perguntas.length - 1) {
       setCurrentQuestion(currentQuestion + 1);
     } else {
-      console.log("Respostas:", respostas);
+      await salvarRespostas(respostas);
       alert('Questionário de interpretação concluído! Obrigado.');
       router.push('/profile');
     }
   };
 
   const handlePrevious = () => {
-    if (currentQuestion > 0) {
-      setCurrentQuestion(currentQuestion - 1);
-    }
+    if (currentQuestion > 0) setCurrentQuestion(currentQuestion - 1);
   };
 
-  const handleVoltar = () => {
-    router.push('/profile');
-  };
+  const handleVoltar = () => router.push('/profile');
+
+  if (isLoading) return <p style={{ padding: '2rem' }}>Carregando questionário...</p>;
 
   return (
-    <div style={{ padding: '2rem', maxWidth: '800px', margin: '0 auto', position: 'relative', minHeight: '100vh' }}>
-      
-      {/* Botão Voltar no canto extremo esquerdo superior */}
+    <div style={{ padding: '2rem', maxWidth: '800px', margin: '0 auto' }}>
       <button
         onClick={handleVoltar}
-        style={{
-          position: 'fixed',
-          top: '1rem',
-          left: '1rem',
-          padding: '0.5rem 1rem',
-          fontSize: '1.2rem',
-          cursor: 'pointer',
-          background: 'none',
-          border: 'none',
-          color: '#000',
-          fontWeight: 'bold',
-          transition: 'opacity 0.2s'
-        }}
-        onMouseEnter={(e) => e.target.style.opacity = '0.6'}
-        onMouseLeave={(e) => e.target.style.opacity = '1'}
+        style={{ position: 'fixed', top: '1rem', left: '1rem', fontWeight: 'bold', border: 'none', background: 'none', cursor: 'pointer' }}
       >
         Voltar
       </button>
 
-      {/* Título centralizado */}
-      <h2 style={{
-        marginBottom: '1rem',
-        marginTop: '2rem',
-        textAlign: 'center',
-        fontSize: '1.8rem',
-        color: '#000'
-      }}>
-        Sobre os Pais
-      </h2>
+      <h2 style={{ marginTop: '2rem', textAlign: 'center' }}>Sobre os Pais</h2>
+      <p>Pergunta {currentQuestion + 1} de {perguntas.length}</p>
+      <h3 style={{ whiteSpace: 'pre-line' }}>{perguntas[currentQuestion]}</h3>
 
-      {/* Pergunta */}
-      <p style={{ textAlign: 'left', marginBottom: '0.5rem' }}>
-        Pergunta {currentQuestion + 1} de {perguntas.length}
-      </p>
-
-      <h3 style={{ marginBottom: '1rem', whiteSpace: 'pre-line' }}>
-        {perguntas[currentQuestion]}
-      </h3>
-
-      {/* Caixa de texto */}
       <textarea
         value={respostas[currentQuestion]}
         onChange={handleRespostaChange}
-        style={{
-          width: '100%',
-          height: '250px',
-          padding: '0.5rem',
-          marginBottom: '1rem',
-          fontSize: '1rem'
-        }}
-      ></textarea>
+        style={{ width: '100%', height: '250px', marginBottom: '1rem' }}
+      />
 
-      {/* Botões Anterior / Próxima */}
-      <div style={{
-        marginTop: '0.5rem',
-        display: 'flex',
-        justifyContent: 'space-between'
-      }}>
-        <button
-          onClick={handlePrevious}
-          disabled={currentQuestion === 0}
-          style={{
-            padding: '0.2rem 1rem',
-            fontSize: '1.2rem',
-            background: 'none',
-            border: 'none',
-            color: '#000',
-            fontWeight: 'bold',
-            cursor: currentQuestion === 0 ? 'not-allowed' : 'pointer',
-            opacity: currentQuestion === 0 ? 0.5 : 1,
-            transition: 'opacity 0.2s'
-          }}
-          onMouseEnter={(e) => {
-            if (currentQuestion !== 0) e.target.style.opacity = '0.6';
-          }}
-          onMouseLeave={(e) => {
-            if (currentQuestion !== 0) e.target.style.opacity = '1';
-          }}
-        >
-          Anterior
-        </button>
-
-        <button
-          onClick={handleNext}
-          style={{
-            padding: '0.2rem 1rem',
-            fontSize: '1.2rem',
-            background: 'none',
-            border: 'none',
-            color: '#000',
-            fontWeight: 'bold',
-            cursor: 'pointer',
-            transition: 'opacity 0.2s'
-          }}
-          onMouseEnter={(e) => e.target.style.opacity = '0.6'}
-          onMouseLeave={(e) => e.target.style.opacity = '1'}
-        >
+      <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+        <button onClick={handlePrevious} disabled={currentQuestion === 0}>Anterior</button>
+        <button onClick={handleNext}>
           {currentQuestion < perguntas.length - 1 ? 'Próxima' : 'Enviar'}
         </button>
       </div>

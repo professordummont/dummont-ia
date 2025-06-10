@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 
 const perguntas = [
@@ -14,21 +14,54 @@ const perguntas = [
 ];
 
 export default function QuestionarioGostos() {
+  const router = useRouter();
+  const userId = 1; // substituir por autenticação real
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [respostas, setRespostas] = useState(Array(perguntas.length).fill(''));
-  const router = useRouter();
+  const [isLoading, setIsLoading] = useState(true);
 
-  const handleRespostaChange = (e) => {
-    const newRespostas = [...respostas];
-    newRespostas[currentQuestion] = e.target.value;
-    setRespostas(newRespostas);
+  useEffect(() => {
+    const carregarRespostas = async () => {
+      try {
+        const res = await fetch(`/api/questionario-gostos?userId=${userId}`);
+        const data = await res.json();
+        if (Array.isArray(data)) {
+          setRespostas(data);
+        }
+      } catch (error) {
+        console.error('Erro ao carregar respostas:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    carregarRespostas();
+  }, []);
+
+  const salvarRespostas = async (respostasParaSalvar) => {
+    try {
+      await fetch('/api/questionario-gostos', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId, respostas: respostasParaSalvar })
+      });
+    } catch (error) {
+      console.error('Erro ao salvar respostas:', error);
+    }
   };
 
-  const handleNext = () => {
+  const handleRespostaChange = async (e) => {
+    const novasRespostas = [...respostas];
+    novasRespostas[currentQuestion] = e.target.value;
+    setRespostas(novasRespostas);
+    await salvarRespostas(novasRespostas);
+  };
+
+  const handleNext = async () => {
     if (currentQuestion < perguntas.length - 1) {
       setCurrentQuestion(currentQuestion + 1);
     } else {
-      console.log("Respostas:", respostas);
+      await salvarRespostas(respostas);
       alert('Questionário de gostos concluído! Obrigado.');
       router.push('/profile');
     }
@@ -44,10 +77,16 @@ export default function QuestionarioGostos() {
     router.push('/profile');
   };
 
+  if (isLoading) {
+    return (
+      <div style={{ padding: '2rem', textAlign: 'center' }}>
+        <p>Carregando questionário...</p>
+      </div>
+    );
+  }
+
   return (
     <div style={{ padding: '2rem', maxWidth: '800px', margin: '0 auto', position: 'relative', minHeight: '100vh' }}>
-      
-      {/* Botão Voltar no canto extremo esquerdo superior */}
       <button
         onClick={handleVoltar}
         style={{
@@ -69,7 +108,6 @@ export default function QuestionarioGostos() {
         Voltar
       </button>
 
-      {/* Título centralizado */}
       <h2 style={{
         marginBottom: '1rem',
         marginTop: '2rem',
@@ -80,7 +118,6 @@ export default function QuestionarioGostos() {
         Sobre o Aluno
       </h2>
 
-      {/* Pergunta */}
       <p style={{ textAlign: 'left', marginBottom: '0.5rem' }}>
         Pergunta {currentQuestion + 1} de {perguntas.length}
       </p>
@@ -89,7 +126,6 @@ export default function QuestionarioGostos() {
         {perguntas[currentQuestion]}
       </h3>
 
-      {/* Caixa de texto */}
       <textarea
         value={respostas[currentQuestion]}
         onChange={handleRespostaChange}
@@ -102,7 +138,6 @@ export default function QuestionarioGostos() {
         }}
       ></textarea>
 
-      {/* Botões Anterior / Próxima */}
       <div style={{
         marginTop: '0.5rem',
         display: 'flex',

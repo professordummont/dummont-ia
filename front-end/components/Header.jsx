@@ -10,7 +10,7 @@ const ProfileIcon = () => (
     height="24"
     viewBox="0 0 24 24"
     fill="none"
-    stroke="black"
+    stroke="currentColor"
     strokeWidth="2"
     strokeLinecap="round"
     strokeLinejoin="round"
@@ -29,16 +29,11 @@ export default function Header() {
   useEffect(() => {
     if (typeof window !== 'undefined') {
       const userId = localStorage.getItem('user_id');
-      if (userId) {
-        setTargetLink('/chat');
-      } else {
-        setTargetLink('/');
-      }
+      setTargetLink(userId ? '/chat' : '/');
     }
   }, []);
 
   const handleLogout = () => {
-    console.log('Fazendo logout...');
     localStorage.removeItem('user_id');
     localStorage.removeItem('user_nome');
     router.push('/');
@@ -52,43 +47,44 @@ export default function Header() {
         justifyContent: 'space-between',
         alignItems: 'center',
         width: '100%',
-        padding: '10px 24px',
-        background: '#fff',
-        borderBottom: '1px solid #eaeaea',
-        boxShadow: '0 2px 4px rgba(0, 0, 0, 0.05)',
+        padding: '1rem 2rem',
+        backgroundColor: '#ffffff',
+        borderBottom: '1px solid #e5e7eb',
+        boxShadow: '0 2px 6px rgba(0,0,0,0.04)',
         position: 'sticky',
         top: 0,
         zIndex: 1000,
       }}
     >
-      {/* Logo + Título */}
+      {/* Logo e Nome */}
       <div style={{ display: 'flex', alignItems: 'center' }}>
         <img
           src="/logo.png"
           alt="Logo"
           style={{
-            width: '50px',
-            height: '50px',
+            width: '48px',
+            height: '48px',
+            borderRadius: '12px',
             objectFit: 'cover',
           }}
         />
         <Link
           href={targetLink}
           style={{
-            marginLeft: '12px',
-            fontSize: '1.8rem',
-            fontWeight: 'bold',
+            marginLeft: '14px',
+            fontSize: '1.5rem',
+            fontWeight: 600,
+            color: '#111',
             textDecoration: 'none',
-            color: '#000',
-            cursor: 'pointer',
+            letterSpacing: '-0.5px',
           }}
         >
           Dummont IA
         </Link>
       </div>
 
-      {/* Ícone de Perfil */}
-      <div style={{ position: 'relative', marginRight: '45px' }}>
+      {/* Perfil */}
+      <div style={{ position: 'relative', marginRight: '5rem', marginLeft: 'auto' }}>
         <button
           onClick={() => setShowMenu(!showMenu)}
           style={{
@@ -106,10 +102,12 @@ export default function Header() {
               width: '42px',
               height: '42px',
               borderRadius: '50%',
-              border: '2px solid #000',
+              backgroundColor: '#f3f4f6',
+              border: '1px solid #ccc',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
+              transition: 'background-color 0.2s ease',
             }}
           >
             <ProfileIcon />
@@ -118,27 +116,31 @@ export default function Header() {
 
         {showMenu && (
           <div
-            onMouseLeave={() => setShowMenu(false)} // 👈 Fecha quando o mouse sai da lista
+            onMouseLeave={() => setShowMenu(false)}
             style={{
               position: 'absolute',
-              top: '50px',
+              top: '52px',
               right: 0,
-              background: '#fff',
-              border: '1px solid #ddd',
-              borderRadius: '8px',
-              boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)',
-              padding: '0.5rem',
-              width: '160px',
+              background: '#ffffff',
+              border: '1px solid #e5e7eb',
+              borderRadius: '12px',
+              boxShadow: '0 8px 24px rgba(0,0,0,0.06)',
+              width: '180px',
+              padding: '0.75rem 0',
+              fontSize: '0.95rem',
             }}
           >
             <Link
               href="/profile"
               style={{
                 display: 'block',
-                padding: '0.5rem',
+                padding: '0.75rem 1.25rem',
+                color: '#111',
                 textDecoration: 'none',
-                color: '#333',
+                transition: 'background 0.2s ease',
               }}
+              onMouseEnter={(e) => (e.currentTarget.style.background = '#f9fafb')}
+              onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
             >
               Perfil
             </Link>
@@ -146,30 +148,31 @@ export default function Header() {
               href="/history"
               style={{
                 display: 'block',
-                padding: '0.5rem',
+                padding: '0.75rem 1.25rem',
+                color: '#111',
                 textDecoration: 'none',
-                color: '#333',
+                transition: 'background 0.2s ease',
               }}
+              onMouseEnter={(e) => (e.currentTarget.style.background = '#f9fafb')}
+              onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
             >
               Histórico
             </Link>
             <button
               onClick={handleLogout}
               style={{
-                display: 'block',
-                padding: '0.5rem',
+                width: '100%',
+                padding: '0.75rem 1.25rem',
                 textAlign: 'left',
                 border: 'none',
-                textDecoration: 'none',
                 background: 'transparent',
-                color: '#333',
+                color: '#e11d48',
                 cursor: 'pointer',
-                marginTop: '1px',
-                fontSize: '1rem',
-                fontFamily: 'inherit',
-                fontWeight: 'normal',
-                lineHeight: '1.5',
+                fontSize: 'inherit',
+                transition: 'background 0.2s ease',
               }}
+              onMouseEnter={(e) => (e.currentTarget.style.background = '#fef2f2')}
+              onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
             >
               Sair
             </button>
